@@ -1,0 +1,93 @@
+{
+  "status": "metrics_computed_on_labeled_queries",
+  "evaluation_type": "source_grounded_development_user_assumed_labels",
+  "interpretation": "Development-only descriptive metrics using source-grounded mappings entered under an explicit user instruction. Labels were not independently reviewed; do not claim expert validation or clinical utility.",
+  "corpus_path": "research_dataset\\corpus_chunks.jsonl",
+  "query_path": "research_dataset\\evaluation_queries_safety_dev.csv",
+  "corpus_size": 18,
+  "query_count": 6,
+  "labeled_query_count": 6,
+  "k": 5,
+  "tokenizer": "unicode-word-lowercase-v1",
+  "retrieval_profile": "panchakarma-query-stoplist-v2",
+  "bm25": {
+    "k1": 1.5,
+    "b": 0.75
+  },
+  "metrics_macro": {
+    "precision_at_k": 0.20000000000000004,
+    "precision_among_returned": 0.4055555555555556,
+    "recall_at_k": 1.0,
+    "ndcg_at_k": 0.9384882922619097,
+    "mean_retrieved_count": 3.5,
+    "mean_irrelevant_returned_at_k": 2.5
+  },
+  "per_query": [
+    {
+      "query_id": "SAFEDEV001",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SAFEDEV002",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SAFEDEV003",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SAFEDEV004",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SAFEDEV005",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 0.6309297535714575,
+      "first_relevant_rank": 2,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SAFEDEV006",
+      "retrieved_count": 3,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.3333333333333333,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 2,
+      "relevant_count": 1
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "status": "small_page_checked_development_corpus_no_expert_review",
+  "required_fields": [
+    "chunk_id",
+    "source_id",
+    "document_title",
+    "document_version",
+    "page_start",
+    "page_end",
+    "section_heading",
+    "text",
+    "language",
+    "source_url",
+    "content_hash_sha256",
+    "extraction_method",
+    "verification_status",
+    "rights_note"
+  ],
+  "verification_status_values": [
+    "machine_extracted_unchecked",
+    "manually_checked_against_source",
+    "domain_expert_reviewed"
+  ],
+  "optional_fields": {
+    "content_representation": ["source_excerpt", "source_summary"]
+  },
+  "notes": "Current corpus has twelve manually checked curriculum excerpts from two user-provided NCISM PDFs and six short editorial summaries from selected pages of a user-provided 2008 CCRAS safety manual. Summaries are not verbatim excerpts; source IDs and printed page locators are preserved. No records are domain-expert-reviewed. Reuse/redistribution rights remain unreviewed, especially for the CCRAS title listed for sale. Do not ingest this schema file as evidence."
+}

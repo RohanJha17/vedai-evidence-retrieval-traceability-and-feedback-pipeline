@@ -1,0 +1,115 @@
+{
+  "status": "metrics_computed_on_labeled_queries",
+  "evaluation_type": "synthetic_fixture_plumbing_demo",
+  "interpretation": "Synthetic fixture only: labels demonstrate software behavior and do not measure retrieval quality on real evidence.",
+  "corpus_path": "research_dataset\\synthetic_demo_corpus.jsonl",
+  "query_path": "research_dataset\\evaluation_queries_synthetic_demo.csv",
+  "corpus_size": 8,
+  "query_count": 8,
+  "labeled_query_count": 8,
+  "k": 5,
+  "tokenizer": "unicode-word-lowercase-v1",
+  "retrieval_profile": "panchakarma-query-stoplist-v2",
+  "bm25": {
+    "k1": 1.5,
+    "b": 0.75
+  },
+  "metrics_macro": {
+    "precision_at_k": 0.15000000000000002,
+    "precision_among_returned": 0.5625,
+    "recall_at_k": 0.75,
+    "ndcg_at_k": 0.75,
+    "mean_retrieved_count": 1.125,
+    "mean_irrelevant_returned_at_k": 0.375
+  },
+  "per_query": [
+    {
+      "query_id": "DEMO001",
+      "retrieved_count": 0,
+      "precision_at_k": 0.0,
+      "precision_among_returned": 0,
+      "recall_at_k": 0.0,
+      "ndcg_at_k": 0.0,
+      "first_relevant_rank": null,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "DEMO002",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "DEMO003",
+      "retrieved_count": 0,
+      "precision_at_k": 0.0,
+      "precision_among_returned": 0,
+      "recall_at_k": 0.0,
+      "ndcg_at_k": 0.0,
+      "first_relevant_rank": null,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "DEMO004",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "DEMO005",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "DEMO006",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "DEMO007",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "DEMO008",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    }
+  ]
+}

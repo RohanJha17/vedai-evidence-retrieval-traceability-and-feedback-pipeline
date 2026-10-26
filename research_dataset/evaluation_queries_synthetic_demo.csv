@@ -1,0 +1,9 @@
+query_id,query_text,gold_passage_ids,split,label_status,intended_use
+DEMO001,What does the Ayusoft overview say Panchakarma means?,"[""SYN-AYU-001""]",synthetic_demo,synthetic_fixture_mapping_not_human_relevance_label,plumbing_and_metric_demo_only
+DEMO002,Which five procedures are listed in the Ayusoft overview?,"[""SYN-AYU-002""]",synthetic_demo,synthetic_fixture_mapping_not_human_relevance_label,plumbing_and_metric_demo_only
+DEMO003,Which three broad stages does Ayusoft name for a procedure?,"[""SYN-AYU-003""]",synthetic_demo,synthetic_fixture_mapping_not_human_relevance_label,plumbing_and_metric_demo_only
+DEMO004,What does the Ayusoft page say about oleation and sudation?,"[""SYN-AYU-004""]",synthetic_demo,synthetic_fixture_mapping_not_human_relevance_label,plumbing_and_metric_demo_only
+DEMO005,What topics does the NCISM postgraduate curriculum include about Shodhana?,"[""SYN-NCISM-001""]",synthetic_demo,synthetic_fixture_mapping_not_human_relevance_label,plumbing_and_metric_demo_only
+DEMO006,Which assessment topics does the NCISM Panchakarma curriculum mention?,"[""SYN-NCISM-002""]",synthetic_demo,synthetic_fixture_mapping_not_human_relevance_label,plumbing_and_metric_demo_only
+DEMO007,What does the NCISM curriculum include about Purva and Pashchata Karma?,"[""SYN-NCISM-003""]",synthetic_demo,synthetic_fixture_mapping_not_human_relevance_label,plumbing_and_metric_demo_only
+DEMO008,What research topic is included in the NCISM Panchakarma curriculum?,"[""SYN-NCISM-004""]",synthetic_demo,synthetic_fixture_mapping_not_human_relevance_label,plumbing_and_metric_demo_only

@@ -1,0 +1,247 @@
+{
+  "status": "metrics_computed_on_labeled_queries",
+  "evaluation_type": "source_grounded_labels_or_unclassified",
+  "interpretation": "Descriptive technical evaluation only; does not establish clinical validity or utility.",
+  "corpus_path": "research_dataset\\corpus_chunks_complete.jsonl",
+  "query_path": "research_dataset\\evaluation_queries_synthetic_pilot.csv",
+  "corpus_size": 36,
+  "query_count": 20,
+  "labeled_query_count": 20,
+  "k": 5,
+  "tokenizer": "unicode-word-lowercase-v1",
+  "retrieval_profile": "panchakarma-query-stoplist-v2",
+  "bm25": {
+    "k1": 1.5,
+    "b": 0.75
+  },
+  "metrics_macro": {
+    "precision_at_k": 0.2,
+    "precision_among_returned": 0.27666666666666667,
+    "recall_at_k": 1.0,
+    "ndcg_at_k": 0.8877071188430579,
+    "mean_retrieved_count": 4.4,
+    "mean_irrelevant_returned_at_k": 3.4
+  },
+  "per_query": [
+    {
+      "query_id": "SYNQ001",
+      "retrieved_count": 3,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.3333333333333333,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 0.6309297535714575,
+      "first_relevant_rank": 2,
+      "irrelevant_returned_at_k": 2,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ002",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ003",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ004",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ005",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ006",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ007",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 0.6309297535714575,
+      "first_relevant_rank": 2,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ008",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ009",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ010",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ011",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 0.43067655807339306,
+      "first_relevant_rank": 4,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ012",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ013",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ014",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ015",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ016",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ017",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 0.6309297535714575,
+      "first_relevant_rank": 2,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ018",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ019",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "SYNQ020",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 0.43067655807339306,
+      "first_relevant_rank": 4,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    }
+  ]
+}

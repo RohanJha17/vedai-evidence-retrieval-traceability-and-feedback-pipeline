@@ -1,0 +1,159 @@
+{
+  "status": "metrics_computed_on_labeled_queries",
+  "evaluation_type": "source_grounded_development_unreviewed_labels",
+  "interpretation": "Development-only descriptive metrics using source-grounded draft mappings that have not been independently reviewed. Not a benchmark or clinical validation.",
+  "corpus_path": "research_dataset\\corpus_chunks.jsonl",
+  "query_path": "research_dataset\\evaluation_queries_ncism_dev.csv",
+  "corpus_size": 18,
+  "query_count": 12,
+  "labeled_query_count": 12,
+  "k": 5,
+  "tokenizer": "unicode-word-lowercase-v1",
+  "retrieval_profile": "panchakarma-query-stoplist-v2",
+  "bm25": {
+    "k1": 1.5,
+    "b": 0.75
+  },
+  "metrics_macro": {
+    "precision_at_k": 0.20000000000000004,
+    "precision_among_returned": 0.6444444444444445,
+    "recall_at_k": 1.0,
+    "ndcg_at_k": 0.9692441461309548,
+    "mean_retrieved_count": 2.1666666666666665,
+    "mean_irrelevant_returned_at_k": 1.1666666666666667
+  },
+  "per_query": [
+    {
+      "query_id": "NCDEV001",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV002",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV003",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV004",
+      "retrieved_count": 3,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.3333333333333333,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 2,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV005",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV006",
+      "retrieved_count": 1,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 1.0,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 0,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV007",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV008",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV009",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV010",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV011",
+      "retrieved_count": 2,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.5,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 0.6309297535714575,
+      "first_relevant_rank": 2,
+      "irrelevant_returned_at_k": 1,
+      "relevant_count": 1
+    },
+    {
+      "query_id": "NCDEV012",
+      "retrieved_count": 5,
+      "precision_at_k": 0.2,
+      "precision_among_returned": 0.2,
+      "recall_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "first_relevant_rank": 1,
+      "irrelevant_returned_at_k": 4,
+      "relevant_count": 1
+    }
+  ]
+}

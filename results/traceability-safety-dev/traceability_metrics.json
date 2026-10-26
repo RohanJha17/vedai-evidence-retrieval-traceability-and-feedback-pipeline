@@ -1,0 +1,69 @@
+{
+  "status": "structural_traceability_audit_completed",
+  "interpretation": "Checks citation IDs, exact corpus-text copying, and locator fields for extractive outputs only. It does not judge semantic support, clinical correctness, or safety; see the blank manual support-review CSV.",
+  "corpus_path": "research_dataset\\corpus_chunks.jsonl",
+  "query_path": "research_dataset\\evaluation_queries_safety_dev.csv",
+  "corpus_size": 18,
+  "query_count": 6,
+  "retrieval_profile": "panchakarma-query-stoplist-v2",
+  "answer_mode": "extractive_evidence_only",
+  "metrics": {
+    "answer_item_count": 21,
+    "citation_presence_coverage": 1.0,
+    "citation_id_resolvability": 1.0,
+    "citations_in_returned_set": 1.0,
+    "exact_corpus_text_coverage": 1.0,
+    "source_locator_completeness": 1.0,
+    "query_abstention_rate": 0.0
+  },
+  "per_query": [
+    {
+      "query_id": "SAFEDEV001",
+      "answer_item_count": 5,
+      "citation_resolvability": 1.0,
+      "exact_corpus_text_coverage": 1.0,
+      "source_locator_completeness": 1.0,
+      "insufficient_evidence": false
+    },
+    {
+      "query_id": "SAFEDEV002",
+      "answer_item_count": 1,
+      "citation_resolvability": 1.0,
+      "exact_corpus_text_coverage": 1.0,
+      "source_locator_completeness": 1.0,
+      "insufficient_evidence": false
+    },
+    {
+      "query_id": "SAFEDEV003",
+      "answer_item_count": 5,
+      "citation_resolvability": 1.0,
+      "exact_corpus_text_coverage": 1.0,
+      "source_locator_completeness": 1.0,
+      "insufficient_evidence": false
+    },
+    {
+      "query_id": "SAFEDEV004",
+      "answer_item_count": 5,
+      "citation_resolvability": 1.0,
+      "exact_corpus_text_coverage": 1.0,
+      "source_locator_completeness": 1.0,
+      "insufficient_evidence": false
+    },
+    {
+      "query_id": "SAFEDEV005",
+      "answer_item_count": 2,
+      "citation_resolvability": 1.0,
+      "exact_corpus_text_coverage": 1.0,
+      "source_locator_completeness": 1.0,
+      "insufficient_evidence": false
+    },
+    {
+      "query_id": "SAFEDEV006",
+      "answer_item_count": 3,
+      "citation_resolvability": 1.0,
+      "exact_corpus_text_coverage": 1.0,
+      "source_locator_completeness": 1.0,
+      "insufficient_evidence": false
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+query_id,query_text,gold_passage_ids,split,label_status,labeler,rationale
+NCDEV001,What course outcome does the NCISM curriculum list for applying Panchakarma principles?,"[""SRC006-P005-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Direct wording match to the CO1 passage.
+NCDEV002,Which concepts are listed under M1U1 Panchakarma Siddhanta Parichaya?,"[""SRC006-P006-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks for the concepts enumerated in the M1U1 chunk.
+NCDEV003,What health and wellbeing topics are listed in M1U3?,"[""SRC006-P007-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks about both M1U3 learning topics.
+NCDEV004,What abilities does the M3 clinical examination module aim to develop?,"[""SRC006-P008-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks about the aim stated in the M3 passage.
+NCDEV005,Which medication topic is covered by M4 in the Panchakarma curriculum?,"[""SRC006-P009-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks for the M4 module subject.
+NCDEV006,Which governance and quality topics are covered by M6?,"[""SRC006-P010-P011-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks for M6 governance and quality subject matter.
+NCDEV007,Which three procedure phases are named in the Vamana curriculum outline?,"[""SRC007-P025-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks about the three phases listed under M10U1.
+NCDEV008,Which phases does the curriculum name in its Virechana procedure outline?,"[""SRC007-P029-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks about phases named in the M12U1 outline.
+NCDEV009,What broad stages does the Nasya curriculum outline name?,"[""SRC007-P033-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks about pre-procedure procedure and post-procedure topics in M14U1.
+NCDEV010,What complication-management topic is listed in the Raktamokshana module?,"[""SRC007-P037-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly matches M16U4's listed learning topic.
+NCDEV011,What does the Basti curriculum say M18 covers?,"[""SRC007-P039-P040-C001""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks about M18's stated scope and its classification/screening units.
+NCDEV012,Which patient-related factors are listed alongside Basti dose schedules?,"[""SRC007-P039-P040-C002""]",dev,assistant_annotated_unreviewed,implementation_draft,Directly asks for patient/disease strength and haemodynamic status listed in M18.

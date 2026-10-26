@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1",
+  "status": "one_local_smoke_test_rating_collected_not_research_data",
+  "storage": "MongoDB evidenceRetrieval and evidenceFeedback collections",
+  "fields": {
+    "retrieval_id": "Opaque per-search identifier; generated only when the user opts in",
+    "query_hash": "SHA-256 of normalized query; raw query text is not persisted in these collections",
+    "evidence_id": "Stable corpus chunk_id actually shown to the user",
+    "rank": "1-based displayed rank",
+    "shown_at": "Timestamp when the source passage was returned",
+    "helpful_label": "Boolean user-reported usefulness label; not a clinical outcome",
+    "reason_code": ["useful", "not_relevant", "outdated_source", "unclear_passage", "missing_context", "other"],
+    "consent_status": "Only consented records are accepted",
+    "system_version": "Retriever/tokenizer/version string used for this search"
+  },
+  "privacy": "No account/user identifier, free-text comment, patient record, or raw query text is stored by this pilot schema.",
+  "interpretation": "Feedback describes retrieval usefulness only. It is not evidence of clinical correctness, safety, or patient benefit. Do not use it as a treatment label or train a clinical ML model from it.",
+  "review": "One manually submitted local smoke-test usefulness rating is stored in the user's local VedAI database; it is not a research sample or clinical label. Further capture occurs only when a search explicitly includes feedback_consent=true and MongoDB is connected. Review consent wording, ethics requirements, retention, and access controls before participant recruitment."
+}

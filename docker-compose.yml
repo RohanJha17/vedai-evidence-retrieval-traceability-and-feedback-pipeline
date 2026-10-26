@@ -1,0 +1,38 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vedai-evidence-rag-api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-4100}:${PORT:-4100}"
+    environment:
+      - PORT=${PORT:-4100}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - MONGODB_URI=mongodb://mongo:27017/VedAI
+      - CORPUS_PATH=research_dataset/corpus_chunks_complete.jsonl
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - api-data:/app/data
+
+  mongo:
+    image: mongo:7.0
+    container_name: vedai-evidence-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mongo-data:
+  api-data:
