@@ -1,19 +1,36 @@
 {
-  "schema_version": "0.1",
-  "status": "one_local_smoke_test_rating_collected_not_research_data",
-  "storage": "MongoDB evidenceRetrieval and evidenceFeedback collections",
-  "fields": {
-    "retrieval_id": "Opaque per-search identifier; generated only when the user opts in",
-    "query_hash": "SHA-256 of normalized query; raw query text is not persisted in these collections",
-    "evidence_id": "Stable corpus chunk_id actually shown to the user",
-    "rank": "1-based displayed rank",
-    "shown_at": "Timestamp when the source passage was returned",
-    "helpful_label": "Boolean user-reported usefulness label; not a clinical outcome",
-    "reason_code": ["useful", "not_relevant", "outdated_source", "unclear_passage", "missing_context", "other"],
-    "consent_status": "Only consented records are accepted",
-    "system_version": "Retriever/tokenizer/version string used for this search"
+  "schema_version": "0.3",
+  "status": "matches_feedback_api_v0.3_with_privacy_controls",
+  "storage": {
+    "mongodb_collections": ["evidenceretrievals", "evidencefeedbacks"],
+    "sqlite_tables": ["retrieval_sessions", "feedback_records"]
   },
-  "privacy": "No account/user identifier, free-text comment, patient record, or raw query text is stored by this pilot schema.",
-  "interpretation": "Feedback describes retrieval usefulness only. It is not evidence of clinical correctness, safety, or patient benefit. Do not use it as a treatment label or train a clinical ML model from it.",
-  "review": "One manually submitted local smoke-test usefulness rating is stored in the user's local VedAI database; it is not a research sample or clinical label. Further capture occurs only when a search explicitly includes feedback_consent=true and MongoDB is connected. Review consent wording, ethics requirements, retention, and access controls before participant recruitment."
+  "required_request_fields": ["evidence_id", "helpful", "consent_status"],
+  "fields": {
+    "retrieval_id": "Optional ID returned by a consented search. When supplied, it must identify a stored session and the rated evidence ID/rank must have appeared in that session.",
+    "evidence_id": "Canonical chunk_id resolving to a record in the active corpus.",
+    "rank": "1-based displayed rank; must match the stored retrieval session when retrieval_id is supplied.",
+    "helpful": "Boolean user-reported usefulness label; not a clinical outcome.",
+    "reason_code": [
+      "useful",
+      "therapy_effective",
+      "not_relevant",
+      "outdated_source",
+      "unclear_passage",
+      "missing_context",
+      "therapy_ineffective",
+      "complication_observed",
+      "other"
+    ],
+    "feedback_type": {
+      "values": ["evidence_retrieval", "post_therapy"],
+      "default": "evidence_retrieval",
+      "reranking": "Only consented evidence_retrieval feedback tied to a stored consented search is included in usefulness reranking. Direct submissions and post_therapy reports are stored separately and do not affect retrieval scores."
+    },
+    "consent_status": "Must be explicitly supplied as consented, granted, or true; there is no implicit consent default.",
+    "query_hash": "SHA-256 of the normalized query; raw query text is not stored in retrieval sessions.",
+    "user_comment": "Optional free text up to 1000 characters. Email, common phone, 12-digit identifier, and date patterns receive best-effort redaction before storage; names and all PHI are not reliably detected. Comments are not returned in the API response."
+  },
+  "interpretation": "Feedback records reported usefulness or reported post-therapy observations. They are not independently verified evidence of clinical correctness, safety, or patient benefit.",
+  "privacy_and_governance": "API_KEY optionally protects all API routes except root, health, and API docs. Feedback and retrieval sessions expire according to FEEDBACK_RETENTION_DAYS (default 365 days). Comment redaction is best-effort and is not a substitute for excluding PHI."
 }

@@ -24,11 +24,19 @@ DATA_DIR = ROOT / "data"
 
 
 class FeedbackStorage:
-    """Unified storage interface supporting MongoDB with automatic SQLite fallback."""
+    """Unified storage interface selecting MongoDB or SQLite during initialization."""
 
-    def __init__(self, mongodb_uri: str = "", sqlite_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        mongodb_uri: str = "",
+        sqlite_path: Path | None = None,
+        feedback_retention_days: int = 365,
+    ) -> None:
         self.mongodb_uri = (mongodb_uri or "").strip()
         self.sqlite_path = sqlite_path or (DATA_DIR / "evidence_pipeline.db")
+        if feedback_retention_days < 1:
+            raise ValueError("feedback_retention_days must be at least 1")
+        self.feedback_retention_days = feedback_retention_days
         self.mongo_client: MongoClient | None = None
         self.database: Any = None
         self.retrieval_collection: Any = None
@@ -56,6 +64,17 @@ class FeedbackStorage:
                 self.feedback_collection.create_index([("queryHash", ASCENDING)])
                 self.feedback_collection.create_index(
                     [("retrievalId", ASCENDING), ("evidenceId", ASCENDING)], unique=True
+                )
+                retention_seconds = self.feedback_retention_days * 24 * 60 * 60
+                self.retrieval_collection.create_index(
+                    [("shownAt", ASCENDING)],
+                    expireAfterSeconds=retention_seconds,
+                    name="ttl_retrieval_shown_at",
+                )
+                self.feedback_collection.create_index(
+                    [("createdAt", ASCENDING)],
+                    expireAfterSeconds=retention_seconds,
+                    name="ttl_feedback_created_at",
                 )
                 self.backend = "mongodb"
                 print("Feedback storage connected using MongoDB")
@@ -99,7 +118,7 @@ class FeedbackStorage:
                     consent_status TEXT NOT NULL,
                     system_version TEXT NOT NULL,
                     user_comment TEXT,
-                    feedback_type TEXT DEFAULT 'post_therapy',
+                    feedback_type TEXT DEFAULT 'evidence_retrieval',
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL,
                     UNIQUE(retrieval_id, evidence_id)
@@ -213,6 +232,8 @@ class FeedbackStorage:
                 now_str = datetime.now(timezone.utc).isoformat()
                 shown_at = feedback.get("shownAt")
                 shown_at_str = shown_at.isoformat() if isinstance(shown_at, datetime) else str(shown_at)
+                created_at = feedback.get("createdAt") or now_str
+                created_at_str = created_at.isoformat() if isinstance(created_at, datetime) else str(created_at)
                 with sqlite3.connect(self.sqlite_path) as conn:
                     cursor = conn.cursor()
                     cursor.execute(
@@ -234,7 +255,7 @@ class FeedbackStorage:
                             feedback["systemVersion"],
                             feedback.get("userComment"),
                             feedback.get("feedbackType", "post_therapy"),
-                            now_str,
+                            created_at_str,
                             now_str,
                         ),
                     )
@@ -246,12 +267,19 @@ class FeedbackStorage:
                 return False, None, f"database_error: {exc}"
         return False, None, "storage_unavailable"
 
-    def get_feedback_stats(self, system_version: str) -> list[dict[str, Any]]:
+    def get_feedback_stats(
+        self, system_version: str, feedback_type: str = "evidence_retrieval"
+    ) -> list[dict[str, Any]]:
         if self.backend == "mongodb" and self.feedback_collection is not None:
             try:
                 return list(
                     self.feedback_collection.aggregate([
-                        {"$match": {"consentStatus": "consented", "systemVersion": system_version}},
+                        {"$match": {
+                            "consentStatus": "consented",
+                            "systemVersion": system_version,
+                            "feedbackType": feedback_type,
+                            "queryHash": {"$ne": "direct_submission"},
+                        }},
                         {
                             "$group": {
                                 "_id": "$evidenceId",
@@ -272,10 +300,11 @@ class FeedbackStorage:
                         """
                         SELECT evidence_id AS _id, COUNT(*) AS feedbackCount, SUM(helpful_label) AS helpfulCount
                         FROM feedback_records
-                        WHERE consent_status = 'consented' AND system_version = ?
+                        WHERE consent_status = 'consented' AND system_version = ? AND feedback_type = ?
+                          AND query_hash != 'direct_submission'
                         GROUP BY evidence_id
                         """,
-                        (system_version,),
+                        (system_version, feedback_type),
                     )
                     results = []
                     for row in cursor.fetchall():
@@ -290,6 +319,48 @@ class FeedbackStorage:
                 print(f"SQLite stats query failed: {exc}")
                 return []
         return []
+
+    def purge_expired(self, retention_days: int | None = None) -> dict[str, int]:
+        """Remove feedback and retrieval-session records older than the retention window."""
+        days = retention_days if retention_days is not None else self.feedback_retention_days
+        if days < 1:
+            raise ValueError("retention_days must be at least 1")
+        cutoff = datetime.now(timezone.utc).timestamp() - days * 24 * 60 * 60
+        cutoff_dt = datetime.fromtimestamp(cutoff, tz=timezone.utc)
+        if self.backend == "mongodb" and self.retrieval_collection is not None and self.feedback_collection is not None:
+            try:
+                feedback_result = self.feedback_collection.delete_many({
+                    "$or": [
+                        {"createdAt": {"$lt": cutoff_dt}},
+                        {"createdAt": {"$exists": False}, "shownAt": {"$lt": cutoff_dt}},
+                    ]
+                })
+                retrieval_result = self.retrieval_collection.delete_many({"shownAt": {"$lt": cutoff_dt}})
+                return {
+                    "feedback_records": int(feedback_result.deleted_count),
+                    "retrieval_sessions": int(retrieval_result.deleted_count),
+                }
+            except PyMongoError as exc:
+                print(f"MongoDB retention cleanup failed: {exc}")
+                return {"feedback_records": 0, "retrieval_sessions": 0}
+        if self.backend == "sqlite":
+            try:
+                cutoff_iso = cutoff_dt.isoformat()
+                with sqlite3.connect(self.sqlite_path) as conn:
+                    feedback_result = conn.execute(
+                        "DELETE FROM feedback_records WHERE created_at < ?", (cutoff_iso,)
+                    )
+                    retrieval_result = conn.execute(
+                        "DELETE FROM retrieval_sessions WHERE shown_at < ?", (cutoff_iso,)
+                    )
+                    conn.commit()
+                    return {
+                        "feedback_records": max(feedback_result.rowcount, 0),
+                        "retrieval_sessions": max(retrieval_result.rowcount, 0),
+                    }
+            except sqlite3.Error as exc:
+                print(f"SQLite retention cleanup failed: {exc}")
+        return {"feedback_records": 0, "retrieval_sessions": 0}
 
     def close(self) -> None:
         if self.mongo_client is not None:

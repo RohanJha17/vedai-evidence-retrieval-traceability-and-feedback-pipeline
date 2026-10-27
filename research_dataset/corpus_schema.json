@@ -20,10 +20,11 @@
   "verification_status_values": [
     "machine_extracted_unchecked",
     "manually_checked_against_source",
-    "domain_expert_reviewed"
+    "domain_expert_reviewed",
+    "synthetic_reference_paraphrase_not_source_evidence"
   ],
   "optional_fields": {
     "content_representation": ["source_excerpt", "source_summary"]
   },
-  "notes": "Current corpus has twelve manually checked curriculum excerpts from two user-provided NCISM PDFs and six short editorial summaries from selected pages of a user-provided 2008 CCRAS safety manual. Summaries are not verbatim excerpts; source IDs and printed page locators are preserved. No records are domain-expert-reviewed. Reuse/redistribution rights remain unreviewed, especially for the CCRAS title listed for sale. Do not ingest this schema file as evidence."
+  "notes": "The 18-passage baseline contains twelve manually checked NCISM curriculum excerpts and six short editorial summaries from selected pages of a user-provided 2008 CCRAS safety manual. The 36-passage corpus adds further NCISM excerpts and two Ayusoft context records. The separate synthetic demo corpus uses synthetic_reference_paraphrase_not_source_evidence. Summaries are not verbatim excerpts. No records are domain-expert-reviewed. Reuse/redistribution rights remain unreviewed. Do not ingest this schema file as evidence."
 }

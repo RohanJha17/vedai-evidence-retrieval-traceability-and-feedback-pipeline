@@ -1,7 +1,7 @@
 {
   "status": "metrics_computed_on_labeled_queries",
-  "evaluation_type": "source_grounded_labels_or_unclassified",
-  "interpretation": "Descriptive technical evaluation only; does not establish clinical validity or utility.",
+  "evaluation_type": "synthetic_query_set_descriptive",
+  "interpretation": "Synthetically drafted query set with source-mapped passages. Descriptive pipeline results only; not an independently reviewed user-query benchmark or clinical validation.",
   "corpus_path": "research_dataset\\corpus_chunks_complete.jsonl",
   "query_path": "research_dataset\\evaluation_queries_synthetic_pilot.csv",
   "corpus_size": 36,

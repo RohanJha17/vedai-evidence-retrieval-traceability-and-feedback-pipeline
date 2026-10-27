@@ -37,6 +37,22 @@ def gold_ids(value: str) -> list[str]:
         return [item.strip() for item in value.replace("|", ";").split(";") if item.strip()]
 
 
+def query_set_kind(queries: list[dict[str, str]]) -> str | None:
+    """Identify synthetic query fixtures and synthetic query sets from their declared metadata."""
+    tags = [
+        " ".join(
+            str(row.get(field, ""))
+            for field in ("split", "label_status", "status", "query_origin", "intended_use")
+        ).lower()
+        for row in queries
+    ]
+    if any("synthetic_fixture" in tag or "synthetic_demo" in tag for tag in tags):
+        return "synthetic_fixture"
+    if any("synthetic" in tag for tag in tags):
+        return "synthetic_queries"
+    return None
+
+
 def main() -> None:
     args = parse_args()
     if args.k < 1:
@@ -95,15 +111,18 @@ def main() -> None:
     def macro(field: str) -> float | None:
         return sum(float(item[field]) for item in evaluated) / len(evaluated) if evaluated else None
 
-    synthetic_labels = any("synthetic" in f"{row.get('split', '')} {row.get('label_status', '')}".lower() for row in queries)
+    query_kind = query_set_kind(queries)
     unreviewed = any(any(marker in str(row.get("label_status", "")).lower() for marker in ("unreviewed", "unadjudicated", "draft")) for row in queries)
     assumed = any("user_assumed_verified" in str(row.get("label_status", "")) for row in queries)
     if not evaluated:
         eval_type = "retrieval_only_no_gold_labels"
         interpretation = "No metrics computed: no queries have non-empty gold_passage_ids. Rankings are pipeline debugging outputs only."
-    elif synthetic_labels:
+    elif query_kind == "synthetic_fixture":
         eval_type = "synthetic_fixture_plumbing_demo"
         interpretation = "Synthetic fixture only: labels demonstrate software behavior and do not measure retrieval quality on real evidence."
+    elif query_kind == "synthetic_queries":
+        eval_type = "synthetic_query_set_descriptive"
+        interpretation = "Synthetically drafted query set with source-mapped passages. Descriptive pipeline results only; not an independently reviewed user-query benchmark or clinical validation."
     elif assumed:
         eval_type = "source_grounded_development_user_assumed_labels"
         interpretation = "Development-only descriptive metrics using source-grounded mappings entered under an explicit user instruction. Labels were not independently reviewed; do not claim expert validation or clinical utility."
