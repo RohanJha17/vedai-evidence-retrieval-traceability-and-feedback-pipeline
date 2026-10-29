@@ -111,18 +111,15 @@ def main() -> None:
     def macro(field: str) -> float | None:
         return sum(float(item[field]) for item in evaluated) / len(evaluated) if evaluated else None
 
-    query_kind = query_set_kind(queries)
+    synthetic_labels = any("synthetic" in f"{row.get('split', '')} {row.get('label_status', '')}".lower() for row in queries)
     unreviewed = any(any(marker in str(row.get("label_status", "")).lower() for marker in ("unreviewed", "unadjudicated", "draft")) for row in queries)
     assumed = any("user_assumed_verified" in str(row.get("label_status", "")) for row in queries)
     if not evaluated:
         eval_type = "retrieval_only_no_gold_labels"
         interpretation = "No metrics computed: no queries have non-empty gold_passage_ids. Rankings are pipeline debugging outputs only."
-    elif query_kind == "synthetic_fixture":
+    elif synthetic_labels:
         eval_type = "synthetic_fixture_plumbing_demo"
         interpretation = "Synthetic fixture only: labels demonstrate software behavior and do not measure retrieval quality on real evidence."
-    elif query_kind == "synthetic_queries":
-        eval_type = "synthetic_query_set_descriptive"
-        interpretation = "Synthetically drafted query set with source-mapped passages. Descriptive pipeline results only; not an independently reviewed user-query benchmark or clinical validation."
     elif assumed:
         eval_type = "source_grounded_development_user_assumed_labels"
         interpretation = "Development-only descriptive metrics using source-grounded mappings entered under an explicit user instruction. Labels were not independently reviewed; do not claim expert validation or clinical utility."

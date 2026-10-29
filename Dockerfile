@@ -7,10 +7,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=4100 \
     CORPUS_PATH="research_dataset/corpus_chunks_complete.jsonl"
 
+# Install curl for container health check
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 COPY pyproject.toml README.md ./
 COPY panchakarma_evidence ./panchakarma_evidence
 
-RUN pip install --no-cache-dir --timeout=120 --retries=10 .
+RUN pip install --no-cache-dir .
 
 # Copy corpus, schemas, and registries (source PDFs are excluded from docker images)
 COPY research_dataset/corpus_chunks.jsonl ./research_dataset/corpus_chunks.jsonl
@@ -25,6 +28,6 @@ RUN mkdir -p /app/data
 EXPOSE 4100
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD python -c "import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('PORT', '4100') + '/health', timeout=4)"
+    CMD curl -f http://localhost:${PORT}/health || exit 1
 
 CMD ["python", "-m", "panchakarma_evidence"]

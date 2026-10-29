@@ -1,8 +1,8 @@
 {
   "status": "structural_traceability_audit_completed",
   "interpretation": "Checks citation IDs, exact corpus-text copying, and locator fields for extractive outputs only. It does not judge semantic support, clinical correctness, or safety; see the blank manual support-review CSV.",
-  "corpus_path": "research_dataset\\corpus_chunks.jsonl",
-  "query_path": "research_dataset\\evaluation_queries_ncism_dev.csv",
+  "corpus_path": "research_dataset/corpus_chunks.jsonl",
+  "query_path": "research_dataset/evaluation_queries_ncism_dev.csv",
   "corpus_size": 18,
   "query_count": 12,
   "retrieval_profile": "panchakarma-query-stoplist-v2",

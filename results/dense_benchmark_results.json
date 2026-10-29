@@ -1,0 +1,38 @@
+{
+  "Tuned BM25 (Ours)": {
+    "p5": 0.2,
+    "p_ret": 0.287,
+    "r5": 1.0,
+    "ndcg5": 0.926,
+    "latency_ms": 0.98,
+    "spurious_retrieval_rate": 0.875,
+    "abstention_rate": 0.125
+  },
+  "Untuned BM25": {
+    "p5": 0.2,
+    "p_ret": 0.2,
+    "r5": 1.0,
+    "ndcg5": 0.926,
+    "latency_ms": 1.01,
+    "spurious_retrieval_rate": 1.0,
+    "abstention_rate": 0.0
+  },
+  "BioBERT Retriever": {
+    "p5": 0.2,
+    "p_ret": 0.2,
+    "r5": 1.0,
+    "ndcg5": 0.963,
+    "latency_ms": 105.89,
+    "spurious_retrieval_rate": 1.0,
+    "abstention_rate": 0.0
+  },
+  "DPR (Zero-Shot)": {
+    "p5": 0.18,
+    "p_ret": 0.18,
+    "r5": 0.9,
+    "ndcg5": 0.85,
+    "latency_ms": 140.78,
+    "spurious_retrieval_rate": 1.0,
+    "abstention_rate": 0.0
+  }
+}

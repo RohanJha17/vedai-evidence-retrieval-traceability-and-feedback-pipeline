@@ -27,6 +27,23 @@ def main() -> None:
     review_rows = []
     query_reports = []
     totals = {key: 0 for key in ("answer_items", "cited", "resolvable", "returned_set", "exact_text", "locators", "abstentions")}
+    existing_reviews: dict[tuple[str, str], dict[str, str]] = {}
+    review_path = args.out / "manual_support_review.csv"
+    if review_path.exists():
+        try:
+            with review_path.open(encoding="utf-8-sig", newline="") as h:
+                for row in csv.DictReader(h):
+                    key = (row.get("query_id", ""), row.get("evidence_ids", ""))
+                    if any(row.get(f) for f in ("support_grade", "reviewer_role", "review_date", "rationale")):
+                        existing_reviews[key] = {
+                            "support_grade": row.get("support_grade", ""),
+                            "reviewer_role": row.get("reviewer_role", ""),
+                            "review_date": row.get("review_date", ""),
+                            "rationale": row.get("rationale", ""),
+                        }
+        except Exception:
+            existing_reviews = {}
+
     for query in queries:
         passages = retrieve(query["query_text"], corpus, 5)
         result = build_extractive_answer(query["query_text"].strip(), passages, corpus)
@@ -55,6 +72,8 @@ def main() -> None:
             if locator_ok:
                 counts["locators"] += 1
             source = sources[0] if sources else None
+            key = (query.get("query_id", ""), ";".join(ids))
+            prev = existing_reviews.get(key, {})
             review_rows.append({
                 "query_id": query.get("query_id", ""), "query_text": query["query_text"],
                 "answer_text": item["text"], "evidence_ids": ";".join(ids),
@@ -62,8 +81,11 @@ def main() -> None:
                 "page_start": source.get("page_start", "") if source else "",
                 "page_end": source.get("page_end", "") if source else "",
                 "section_heading": source.get("section_heading", "") if source else "",
-                "representation": item["representation"], "support_grade": "", "reviewer_role": "",
-                "review_date": "", "rationale": "",
+                "representation": item["representation"],
+                "support_grade": prev.get("support_grade", ""),
+                "reviewer_role": prev.get("reviewer_role", ""),
+                "review_date": prev.get("review_date", ""),
+                "rationale": prev.get("rationale", ""),
             })
         for key in counts:
             totals[key] += counts[key]

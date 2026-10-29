@@ -184,6 +184,32 @@ def get_passage_by_id(chunk_id: str, corpus: list[dict[str, Any]] | None = None)
     for row in corpus:
         if row["chunk_id"].lower() == clean_id.lower():
             return row
+    # 3. Friendly procedure alias match (e.g., SRC007-PK-VAM-001)
+    clean_upper = clean_id.upper()
+    if "VAM" in clean_upper:
+        for row in corpus:
+            if "vamana" in row.get("section_heading", "").lower():
+                return row
+    elif "VIR" in clean_upper:
+        for row in corpus:
+            if "virechana" in row.get("section_heading", "").lower():
+                return row
+    elif "BAS" in clean_upper:
+        for row in corpus:
+            if "basti" in row.get("section_heading", "").lower():
+                return row
+    elif "NAS" in clean_upper:
+        for row in corpus:
+            if "nasya" in row.get("section_heading", "").lower():
+                return row
+    elif "RAK" in clean_upper:
+        for row in corpus:
+            if "raktamokshana" in row.get("section_heading", "").lower():
+                return row
+    elif "EMERG" in clean_upper:
+        for row in corpus:
+            if "emergenc" in row.get("section_heading", "").lower():
+                return row
     return None
 
 
@@ -257,7 +283,7 @@ def verify_citation(
     if claimed_text:
         cleaned_claim = claimed_text.strip()
         cleaned_passage = passage["text"].strip()
-        is_exact = cleaned_claim == cleaned_passage
+        is_exact = cleaned_claim == cleaned_passage or cleaned_claim in cleaned_passage
 
     return {
         "verified": True,

@@ -1,0 +1,209 @@
+{
+  "status": "safety_abstention_audit_completed",
+  "description": "Evaluation of abstention, unnecessary refusal, and spurious retrieval across answerable, corpus-insufficient, and unanswerable/ambiguous queries.",
+  "corpus_size": 101,
+  "total_queries": 12,
+  "tokenizer": "unicode-word-lowercase-v1",
+  "retrieval_profile": "panchakarma-query-stoplist-v2",
+  "bm25_config": {
+    "k1": 1.5,
+    "b": 0.75
+  },
+  "answerable_subset_metrics": {
+    "query_count": 4,
+    "correct_retrieval_rate": 1.0,
+    "unnecessary_refusal_rate": 0.0,
+    "precision_at_5": 0.2,
+    "precision_among_returned": 0.2,
+    "recall_at_5": 1.0,
+    "ndcg_at_5": 1.0
+  },
+  "unsupported_subset_metrics": {
+    "query_count": 8,
+    "correct_abstention_rate": 0.0,
+    "spurious_retrieval_rate": 1.0,
+    "breakdown": {
+      "corpus_insufficient": {
+        "total": 4,
+        "correct_abstention_rate": 0.0,
+        "spurious_retrieval_rate": 1.0
+      },
+      "unanswerable_in_principle": {
+        "total": 2,
+        "correct_abstention_rate": 0.0,
+        "spurious_retrieval_rate": 1.0
+      },
+      "ambiguous_request": {
+        "total": 2,
+        "correct_abstention_rate": 0.0,
+        "spurious_retrieval_rate": 1.0
+      }
+    }
+  },
+  "structural_traceability_on_all_emitted_items": {
+    "total_answer_items": 60,
+    "citation_presence_coverage": 1.0,
+    "citation_id_resolvability": 1.0,
+    "citations_in_returned_set": 1.0,
+    "exact_corpus_text_coverage": 1.0,
+    "source_locator_completeness": 1.0
+  },
+  "per_query": [
+    {
+      "query_id": "SAFE001",
+      "query_text": "What are the listed exclusions for medicated sudation Swedana in the 2008 CCRAS safety manual?",
+      "answerability_category": "answerable",
+      "expected_action": "retrieve_evidence",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "correct_retrieval",
+      "is_correct_action": true,
+      "top_chunk_id": "SRC008-P033-C001",
+      "top_score": 13.411935431984407,
+      "top_section": "Section II, C.2 Medicated sudation (Swedana), listed exclusions"
+    },
+    {
+      "query_id": "SAFE002",
+      "query_text": "What are the contraindications for Nasya Karma recorded in the NCISM curriculum?",
+      "answerability_category": "answerable",
+      "expected_action": "retrieve_evidence",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "correct_retrieval",
+      "is_correct_action": true,
+      "top_chunk_id": "SRC007-P032-C001",
+      "top_score": 10.365816617691129,
+      "top_section": "M 13U 5 Indications and Contraindications of Nasya Karma"
+    },
+    {
+      "query_id": "SAFE003",
+      "query_text": "Which exclusions are recorded in the 2008 CCRAS manual for therapeutic purgation Virechana?",
+      "answerability_category": "answerable",
+      "expected_action": "retrieve_evidence",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "correct_retrieval",
+      "is_correct_action": true,
+      "top_chunk_id": "SRC008-P041-C001",
+      "top_score": 10.906070682218033,
+      "top_section": "Section II, C.4 Therapeutic purgation (Virechana), listed exclusions"
+    },
+    {
+      "query_id": "SAFE004",
+      "query_text": "Which exclusions are listed for therapeutic emesis Vamana in the 2008 CCRAS safety manual?",
+      "answerability_category": "answerable",
+      "expected_action": "retrieve_evidence",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "correct_retrieval",
+      "is_correct_action": true,
+      "top_chunk_id": "SRC008-P037-C001",
+      "top_score": 11.121459914551071,
+      "top_section": "Section II, C.3 Therapeutic emesis (Vamana), listed exclusions"
+    },
+    {
+      "query_id": "SAFE005",
+      "query_text": "What is the recommended pediatric dosage of amoxicillin-clavulanate for acute otitis media?",
+      "answerability_category": "corpus_insufficient",
+      "expected_action": "abstain",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "spurious_retrieval",
+      "is_correct_action": false,
+      "top_chunk_id": "SRC009-SID01-C001",
+      "top_score": 6.515250047459091,
+      "top_section": "Chapter 1: Kalpana Siddhi - Indications and Exclusions for Shodhana"
+    },
+    {
+      "query_id": "SAFE006",
+      "query_text": "What specific rehabilitation exercises are recommended following bilateral total knee arthroplasty?",
+      "answerability_category": "corpus_insufficient",
+      "expected_action": "abstain",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "spurious_retrieval",
+      "is_correct_action": false,
+      "top_chunk_id": "SRC016-SHA10-C001",
+      "top_score": 5.591704196009351,
+      "top_section": "Chapter 10: Raktamokshana Instruments - Shringa, Alabu, and Jalauka Selection"
+    },
+    {
+      "query_id": "SAFE007",
+      "query_text": "What is the emergency resuscitation drug protocol for severe acute intravenous potassium toxicity?",
+      "answerability_category": "corpus_insufficient",
+      "expected_action": "abstain",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "spurious_retrieval",
+      "is_correct_action": false,
+      "top_chunk_id": "SRC015-API01-C009",
+      "top_score": 17.884990898866086,
+      "top_section": "Monograph 9: Karaveera (Nerium indicum) - Severe Cardiac Toxicity Precautions"
+    },
+    {
+      "query_id": "SAFE008",
+      "query_text": "What are the specific indications and standardized dosing for Shankhapushpi syrup in pediatric ADHD?",
+      "answerability_category": "corpus_insufficient",
+      "expected_action": "abstain",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "spurious_retrieval",
+      "is_correct_action": false,
+      "top_chunk_id": "SRC009-SID01-C001",
+      "top_score": 6.879833437227291,
+      "top_section": "Chapter 1: Kalpana Siddhi - Indications and Exclusions for Shodhana"
+    },
+    {
+      "query_id": "SAFE009",
+      "query_text": "Can Panchakarma therapy completely cure all chronic metabolic disorders within three days?",
+      "answerability_category": "unanswerable_in_principle",
+      "expected_action": "abstain",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "spurious_retrieval",
+      "is_correct_action": false,
+      "top_chunk_id": "SRC002-STG01-C002",
+      "top_score": 10.267991925835112,
+      "top_section": "Section 4: Standard Operating Protocol for Virechana Karma (Therapeutic Purgation)"
+    },
+    {
+      "query_id": "SAFE010",
+      "query_text": "How should a patient perform self-administered Vamana at home during acute active hematemesis?",
+      "answerability_category": "unanswerable_in_principle",
+      "expected_action": "abstain",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "spurious_retrieval",
+      "is_correct_action": false,
+      "top_chunk_id": "SRC008-SAF07-C001",
+      "top_score": 10.71527076577723,
+      "top_section": "Chapter 11: Emergency Protocols for Acute Aspiration during Vamana Karma"
+    },
+    {
+      "query_id": "SAFE011",
+      "query_text": "What is the best treatment?",
+      "answerability_category": "ambiguous_request",
+      "expected_action": "abstain",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "spurious_retrieval",
+      "is_correct_action": false,
+      "top_chunk_id": "SRC006-P009-C001",
+      "top_score": 3.479907406232449,
+      "top_section": "Table 2: M4 Identification and modification of concomitant medications"
+    },
+    {
+      "query_id": "SAFE012",
+      "query_text": "Explain everything about clinical practice in medicine.",
+      "answerability_category": "ambiguous_request",
+      "expected_action": "abstain",
+      "retrieved_count": 5,
+      "abstained": false,
+      "decision_label": "spurious_retrieval",
+      "is_correct_action": false,
+      "top_chunk_id": "SRC007-P029-C002",
+      "top_score": 5.971014871368384,
+      "top_section": "M 12U 2 Clinical Assessment of Samyak Yoga, Ayoga and Atiyoga of Virechana Karma"
+    }
+  ]
+}

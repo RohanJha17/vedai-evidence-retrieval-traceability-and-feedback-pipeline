@@ -10,8 +10,6 @@ services:
     environment:
       - PORT=${PORT:-4100}
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
-      - API_KEY=${API_KEY:-}
-      - FEEDBACK_RETENTION_DAYS=${FEEDBACK_RETENTION_DAYS:-365}
       - MONGODB_URI=mongodb://mongo:27017/VedAI
       - CORPUS_PATH=research_dataset/corpus_chunks_complete.jsonl
     depends_on:
