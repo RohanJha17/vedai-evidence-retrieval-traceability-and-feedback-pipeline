@@ -23,6 +23,14 @@ def test_health():
     assert "feedback_storage" in data
 
 
+def test_presentation_ui_and_assets_are_served():
+    page = client.get("/ui/")
+    assert page.status_code == 200
+    assert "VedAI Evidence Explorer" in page.text
+    assert client.get("/ui/styles.css").status_code == 200
+    assert client.get("/ui/app.js").status_code == 200
+
+
 def test_evidence_search_without_consent():
     response = client.post(
         "/api/evidence/search",
@@ -59,6 +67,30 @@ def test_evidence_answer():
     assert len(data["answer"]) > 0
     assert "corpus_version" in data
     assert "notice" in data
+
+
+def test_search_and_answer_abstain_for_high_risk_or_out_of_scope_queries():
+    query = "How should a patient perform self-administered Vamana at home during acute active hematemesis?"
+
+    search_res = client.post("/api/evidence/search", json={"query": query})
+    assert search_res.status_code == 200
+    search_data = search_res.json()
+    assert search_data["passages"] == []
+    assert search_data["insufficient_evidence"] is True
+    assert search_data["abstention"] == {
+        "abstained": True,
+        "reason": "high_risk_or_personalized_request",
+        "message": api.ABSTENTION_NOTICE,
+    }
+
+    answer_res = client.post("/api/evidence/answer", json={"query": query})
+    assert answer_res.status_code == 200
+    answer_data = answer_res.json()
+    assert answer_data["answer"] == []
+    assert answer_data["evidence"] == []
+    assert answer_data["insufficient_evidence"] is True
+    assert answer_data["abstention"]["abstained"] is True
+    assert answer_data["abstention"]["message"] == api.ABSTENTION_NOTICE
 
 
 def test_feedback_flow():

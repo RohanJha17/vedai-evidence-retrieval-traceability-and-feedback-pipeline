@@ -30,7 +30,36 @@ RETRIEVAL_PROFILE = {
     """.split()),
 }
 BASELINE_PROFILE = {"name": "bm25-legacy-v1", "max_query_term_document_frequency": 1.0, "ignored_query_terms": frozenset()}
-RETRIEVAL_SYSTEM_VERSION = "bm25-feedback-v0.3-panchakarma-query-stoplist-v2-k1.5-b0.75"
+RETRIEVAL_SYSTEM_VERSION = "bm25-feedback-v0.4-panchakarma-query-stoplist-v2-abstention-v1-k1.5-b0.75"
+
+# Runtime guardrails for this narrow, educational Panchakarma corpus. These are
+# deterministic scope checks, not a clinically validated safety classifier.
+SAFETY_SCOPE_TERMS = frozenset("""
+    panchakarma panchkarma vamana virechana basti vasti nasya raktamokshana
+    swedana sudation snehana oleation shodhana upakarma abhyanga anuvasana
+    niruha emesis purgation ccras ncism aypg ayush
+""".split())
+HIGH_RISK_QUERY_PATTERNS = (
+    re.compile(r"\bself[\s-]?administer(?:ed|ing)?\b", re.IGNORECASE),
+    re.compile(r"\bat\s+home\b", re.IGNORECASE),
+    re.compile(r"\bhematemesis\b", re.IGNORECASE),
+    re.compile(r"\b(?:recommended|standardized)?\s*(?:dose|dosage|dosing)\b", re.IGNORECASE),
+    re.compile(r"\b(?:my|our)\s+(?:symptom|patient|child|dose)\b", re.IGNORECASE),
+    re.compile(r"\bhow\s+should\s+(?:a\s+)?patient\b", re.IGNORECASE),
+    re.compile(r"\b(?:should|can|may)\s+i\s+(?:take|perform|use|try)\b", re.IGNORECASE),
+    re.compile(r"\bcompletely\s+cure\b|\bcure\s+all\b|\bwithin\s+\d+\s+(?:days?|weeks?|months?)\b", re.IGNORECASE),
+    re.compile(
+        r"\b(?:can|does|will)\b.{0,60}\b(?:cure|treat|heal|reverse)\b"
+        r".{0,80}\b(?:disease|disorder|condition|diabetes|hypertension|chronic)\b",
+        re.IGNORECASE,
+    ),
+)
+AMBIGUOUS_QUERY_PATTERNS = (
+    re.compile(r"\bbest\s+treatment\b", re.IGNORECASE),
+    re.compile(r"\b(?:explain|tell\s+me)\s+everything\b", re.IGNORECASE),
+    re.compile(r"\beverything\s+about\b|\ball\s+about\b", re.IGNORECASE),
+)
+MIN_QUERY_EVIDENCE_COVERAGE = 0.5
 
 
 def tokenize(text: Any) -> list[str]:
@@ -110,6 +139,44 @@ def retrieve(query: str, corpus: list[dict[str, Any]], limit: int = 5, profile: 
     ranked.sort(key=lambda item: (-item["score"], item["chunk_id"]))
     safe_limit = max(1, min(20, int(limit)))
     return ranked[:safe_limit]
+
+
+def apply_safety_abstention(
+    query: str,
+    passages: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Apply conservative scope and lexical-support checks before returning evidence.
+
+    This guard only covers obvious unsupported, ambiguous, and high-risk request
+    patterns for this educational corpus. It is not a medical safety classifier.
+    """
+    if any(pattern.search(query) for pattern in HIGH_RISK_QUERY_PATTERNS):
+        return [], "high_risk_or_personalized_request"
+    if any(pattern.search(query) for pattern in AMBIGUOUS_QUERY_PATTERNS):
+        return [], "ambiguous_request"
+
+    query_tokens = set(tokenize(query))
+    if not query_tokens.intersection(SAFETY_SCOPE_TERMS):
+        return [], "outside_supported_domain"
+    if not passages:
+        return [], "no_matching_evidence"
+
+    query_terms = query_tokens.difference(RETRIEVAL_PROFILE["ignored_query_terms"])
+    if not query_terms:
+        return [], "insufficient_query_detail"
+
+    supported: list[dict[str, Any]] = []
+    for passage in passages:
+        passage_text = " ".join(str(passage.get(key, "")) for key in (
+            "section_heading", "text", "document_title", "document_version",
+        ))
+        passage_tokens = set(tokenize(passage_text))
+        coverage = len(query_terms.intersection(passage_tokens)) / len(query_terms)
+        if coverage >= MIN_QUERY_EVIDENCE_COVERAGE:
+            supported.append(passage)
+    if not supported:
+        return [], "low_query_evidence_overlap"
+    return supported, None
 
 
 def build_extractive_answer(query: str, passages: list[dict[str, Any]], corpus: list[dict[str, Any]] | None = None) -> dict[str, Any]:

@@ -12,12 +12,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf 
 
 COPY pyproject.toml README.md ./
 COPY panchakarma_evidence ./panchakarma_evidence
+COPY frontend ./frontend
 
 RUN pip install --no-cache-dir .
 
 # Copy corpus, schemas, and registries (source PDFs are excluded from docker images)
 COPY research_dataset/corpus_chunks.jsonl ./research_dataset/corpus_chunks.jsonl
 COPY research_dataset/corpus_chunks_complete.jsonl ./research_dataset/corpus_chunks_complete.jsonl
+COPY research_dataset/corpus_chunks_clinical_expanded.jsonl ./research_dataset/corpus_chunks_clinical_expanded.jsonl
+COPY research_dataset/corpus_chunks_curated_clinical.jsonl ./research_dataset/corpus_chunks_curated_clinical.jsonl
 COPY research_dataset/synthetic_demo_corpus.jsonl ./research_dataset/synthetic_demo_corpus.jsonl
 COPY research_dataset/source_registry.csv ./research_dataset/source_registry.csv
 COPY research_dataset/corpus_schema.json ./research_dataset/corpus_schema.json

@@ -14,8 +14,13 @@ if str(ROOT) not in sys.path:
 
 from panchakarma_evidence.retrieval import (  # noqa: E402
     BM25_CONFIG,
+    AMBIGUOUS_QUERY_PATTERNS,
+    HIGH_RISK_QUERY_PATTERNS,
+    MIN_QUERY_EVIDENCE_COVERAGE,
     RETRIEVAL_PROFILE,
+    SAFETY_SCOPE_TERMS,
     TOKENIZER_VERSION,
+    apply_safety_abstention,
     build_extractive_answer,
     load_corpus,
     retrieve,
@@ -74,7 +79,8 @@ def main() -> None:
         expected_act = query.get("expected_action", "abstain")
         target_ids = gold_ids(query.get("gold_passage_ids", ""))
 
-        passages = retrieve(text, corpus, args.k, RETRIEVAL_PROFILE)
+        raw_passages = retrieve(text, corpus, args.k, RETRIEVAL_PROFILE)
+        passages, abstention_reason = apply_safety_abstention(text, raw_passages)
         answer_result = build_extractive_answer(text, passages, corpus)
         abstained = answer_result["insufficient_evidence"]
         retrieved_count = len(passages)
@@ -183,6 +189,7 @@ def main() -> None:
             "expected_action": expected_act,
             "retrieved_count": retrieved_count,
             "abstained": abstained,
+            "abstention_reason": abstention_reason,
             "decision_label": decision_label,
             "is_correct_action": is_correct_action,
             "top_chunk_id": passages[0]["chunk_id"] if passages else None,
@@ -245,6 +252,14 @@ def main() -> None:
         "tokenizer": TOKENIZER_VERSION,
         "retrieval_profile": RETRIEVAL_PROFILE["name"],
         "bm25_config": BM25_CONFIG,
+        "runtime_abstention_policy": {
+            "name": "deterministic-scope-risk-ambiguity-overlap-v1",
+            "scope_anchor_count": len(SAFETY_SCOPE_TERMS),
+            "high_risk_pattern_count": len(HIGH_RISK_QUERY_PATTERNS),
+            "ambiguity_pattern_count": len(AMBIGUOUS_QUERY_PATTERNS),
+            "minimum_query_evidence_coverage": MIN_QUERY_EVIDENCE_COVERAGE,
+            "clinical_validation_status": "not_clinically_validated",
+        },
         "answerable_subset_metrics": {
             "query_count": cat_counts["answerable"]["total"],
             "correct_retrieval_rate": ratio(cat_counts["answerable"].get("correct_retrieval", 0), cat_counts["answerable"]["total"]),

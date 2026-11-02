@@ -1,8 +1,12 @@
+import csv
+import json
 import math
+from pathlib import Path
 from panchakarma_evidence.retrieval import (
     BASELINE_PROFILE,
     BM25_CONFIG,
     RETRIEVAL_PROFILE,
+    apply_safety_abstention,
     apply_feedback_reranking,
     build_extractive_answer,
     get_corpus_stats,
@@ -32,6 +36,68 @@ def test_retrieval_profile_filtering():
     results = retrieve("Vamana procedure stages", corpus, limit=5)
     assert len(results) > 0
     assert any("vamana" in r["text"].lower() for r in results)
+
+
+def test_safety_abstention_requires_supported_domain_and_evidence():
+    root = Path(__file__).resolve().parents[1]
+    corpus = load_corpus(root / "research_dataset/corpus_chunks_clinical_expanded.jsonl")
+
+    supported = "What are the contraindications for Nasya Karma in the NCISM curriculum?"
+    passages = retrieve(supported, corpus, limit=5)
+    filtered, reason = apply_safety_abstention(supported, passages)
+    assert filtered
+    assert reason is None
+
+    unsupported = "What is the emergency resuscitation drug protocol for severe acute intravenous potassium toxicity?"
+    filtered, reason = apply_safety_abstention(unsupported, retrieve(unsupported, corpus, limit=5))
+    assert filtered == []
+    assert reason == "outside_supported_domain"
+
+    dangerous = "How should a patient perform self-administered Vamana at home during acute active hematemesis?"
+    filtered, reason = apply_safety_abstention(dangerous, retrieve(dangerous, corpus, limit=5))
+    assert filtered == []
+    assert reason == "high_risk_or_personalized_request"
+
+    treatment_claim = "Does Panchakarma cure diabetes?"
+    filtered, reason = apply_safety_abstention(treatment_claim, retrieve(treatment_claim, corpus, limit=5))
+    assert filtered == []
+    assert reason == "high_risk_or_personalized_request"
+
+    impossible_claim = "Can Panchakarma therapy completely cure all chronic metabolic disorders within three days?"
+    filtered, reason = apply_safety_abstention(impossible_claim, retrieve(impossible_claim, corpus, limit=5))
+    assert filtered == []
+    assert reason == "high_risk_or_personalized_request"
+
+    ambiguous = "What is the best treatment?"
+    filtered, reason = apply_safety_abstention(ambiguous, retrieve(ambiguous, corpus, limit=5))
+    assert filtered == []
+    assert reason == "ambiguous_request"
+
+    weak_match = "Does Nasya connect to lunar mining equipment?"
+    filtered, reason = apply_safety_abstention(weak_match, retrieve(weak_match, corpus, limit=5))
+    assert filtered == []
+    assert reason == "low_query_evidence_overlap"
+
+
+def test_safety_abstention_policy_matches_audit_queries():
+    root = Path(__file__).resolve().parents[1]
+    corpus = load_corpus(root / "research_dataset/corpus_chunks_clinical_expanded.jsonl")
+    with (root / "research_dataset/evaluation_queries_safety_audit.csv").open(
+        encoding="utf-8-sig", newline=""
+    ) as handle:
+        queries = list(csv.DictReader(handle))
+
+    for row in queries:
+        raw = retrieve(row["query_text"], corpus, limit=5)
+        passages, reason = apply_safety_abstention(row["query_text"], raw)
+        if row["answerability_category"] == "answerable":
+            expected_ids = set(json.loads(row["gold_passage_ids"]))
+            assert passages, row["query_id"]
+            assert expected_ids.intersection(p["chunk_id"] for p in passages), row["query_id"]
+            assert reason is None, row["query_id"]
+        else:
+            assert passages == [], row["query_id"]
+            assert reason is not None, row["query_id"]
 
 
 def test_retrieve_deterministic():

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f1f8e9" />
+    <meta name="description" content="A faculty-friendly interface for exploring traceable Panchakarma source evidence." />
+    <title>VedAI Evidence Explorer</title>
+    <link rel="stylesheet" href="/ui/styles.css?v=20261030-feedback-align" />
+    <script src="/ui/app.js?v=20261030-feedback-stats" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/ui/" aria-label="VedAI Evidence Explorer home">
+        <span class="brand-mark" aria-hidden="true">V</span>
+        <span><strong>VedAI</strong><small>Evidence Explorer</small></span>
+      </a>
+      <nav class="primary-nav" id="primary-nav" aria-label="Main sections">
+        <button class="nav-tab active" type="button" data-view="retrieval">Evidence Retrieval</button>
+        <button class="nav-tab" type="button" data-view="corpus">Corpus Inspection</button>
+        <button class="nav-tab" type="button" data-view="traceability">Traceability</button>
+        <button class="nav-tab" type="button" data-view="feedback">Feedback</button>
+      </nav>
+      <div class="topbar-actions">
+        <span class="api-status" id="api-status"><span class="status-dot"></span><span id="api-status-text">Checking API…</span></span>
+        <a class="docs-link" href="/docs" target="_blank" rel="noopener">API docs <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-view active" id="page-retrieval" data-page="retrieval">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-line"></span> Evidence retrieval · traceability · feedback</p>
+          <h1>Ask a question.<br /><span>See the source behind it.</span></h1>
+          <p class="hero-description">Explore Panchakarma passages in plain language, with the source, section, and page kept alongside every result.</p>
+        </div>
+        <div class="hero-note" aria-label="How answers are produced">
+          <span class="note-icon" aria-hidden="true">✳</span>
+          <p><strong>Source-led answers</strong><br />Exact passage excerpts. Traceable citations. No generated treatment advice.</p>
+        </div>
+      </section>
+
+      <div class="content-grid">
+        <section class="main-column" aria-label="Evidence search">
+          <div class="search-card">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow eyebrow-dark">Ask the corpus</p>
+                <h2>What would you like to find?</h2>
+              </div>
+              <label class="top-k-control" for="top-k">Show
+                <select id="top-k" aria-label="Number of evidence passages">
+                  <option value="3">3 sources</option>
+                  <option value="5" selected>5 sources</option>
+                  <option value="10">10 sources</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="mode-switch" role="group" aria-label="Evidence retrieval mode">
+              <button class="mode-button active" type="button" data-mode="answer">Answer</button>
+              <button class="mode-button" type="button" data-mode="search">Search</button>
+              <button class="mode-button" type="button" data-mode="demo-search">Synthetic demo</button>
+            </div>
+            <p class="mode-description" id="mode-description">Source-grounded extractive answers with traceable citations.</p>
+
+            <form id="search-form">
+              <label class="sr-only" for="query-input">Enter a question about the Panchakarma evidence collection</label>
+              <textarea id="query-input" rows="3" maxlength="1000" placeholder="Example: Which contraindications for Nasya are recorded in the NCISM curriculum?" required></textarea>
+              <div class="form-bottom">
+                <span class="input-hint">Tip: include a procedure or source name for a more focused search.</span>
+                <button class="search-button" id="search-button" type="submit">
+                  <span class="button-label">Find evidence</span><span class="button-arrow" aria-hidden="true">→</span>
+                </button>
+              </div>
+            </form>
+
+            <label class="consent-option" id="retrieval-consent-wrap" hidden>
+              <input id="retrieval-consent" type="checkbox" />
+              <span>I consent to saving this retrieval session so I can submit feedback on the passages shown.</span>
+            </label>
+
+            <details class="api-key-settings">
+              <summary>Optional API key</summary>
+              <label for="api-key">Only needed if your `.env` has `API_KEY` set</label>
+              <input id="api-key" type="password" autocomplete="off" placeholder="Enter API key for this browser session" />
+            </details>
+
+            <div class="examples-heading"><span>Try a prepared demo query</span><span class="examples-rule"></span></div>
+            <div class="example-list" id="example-list" aria-label="Prepared demo queries"></div>
+          </div>
+
+          <section class="results-section" id="results-section" aria-live="polite" aria-busy="false">
+            <div class="results-heading">
+              <div>
+                <p class="eyebrow eyebrow-dark">Your results</p>
+                <h2 id="results-title">Evidence will appear here</h2>
+              </div>
+              <span class="result-count" id="result-count" hidden></span>
+            </div>
+            <div id="results-content" class="results-content">
+              <div class="empty-state">
+                <span class="empty-icon" aria-hidden="true">⌕</span>
+                <p>Choose a demo query above, or write your own question to explore the collection.</p>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <aside class="side-column">
+          <section class="collection-card">
+            <div class="card-topline"><span class="mini-icon" aria-hidden="true">◈</span><span>Active collection</span></div>
+            <h2>Panchakarma source passages</h2>
+            <div class="collection-stat"><strong id="corpus-count">—</strong><span>passages loaded</span></div>
+            <div class="collection-footer"><span class="status-dot" id="collection-dot"></span><span id="collection-status">Checking collection…</span></div>
+          </section>
+
+          <section class="how-card">
+            <p class="eyebrow eyebrow-dark">How to read a result</p>
+            <ol class="how-list">
+              <li><span class="step-number">01</span><div><strong>Ask</strong><p>Use a prepared example or enter a question.</p></div></li>
+              <li><span class="step-number">02</span><div><strong>Review the excerpt</strong><p>The answer is copied from a matching corpus passage.</p></div></li>
+              <li><span class="step-number">03</span><div><strong>Trace the citation</strong><p>Check the source, section, page, and passage ID.</p></div></li>
+            </ol>
+          </section>
+
+        </aside>
+      </div>
+      </section>
+
+      <section class="page-view" id="page-corpus" data-page="corpus">
+        <div class="page-heading"><p class="eyebrow eyebrow-dark">Corpus inspection</p><h1>Explore the collection.</h1><p>Browse passages, review registered source documents, and inspect corpus coverage.</p></div>
+        <div class="corpus-toolbar">
+          <label>Procedure<select id="corpus-procedure"><option value="">All procedures</option></select></label>
+          <label>Source ID<input id="corpus-source" placeholder="e.g. SRC-007" /></label>
+          <label>Results per page<select id="corpus-limit"><option>10</option><option selected>20</option><option>50</option></select></label>
+          <button class="search-button" id="load-passages" type="button"><span>Browse passages</span><span aria-hidden="true">→</span></button>
+          <button class="secondary-button" id="load-corpus-stats" type="button">Refresh statistics</button>
+        </div>
+        <p class="stats-scope" id="corpus-stats-scope">Overall corpus</p>
+        <div class="stats-grid" id="corpus-stats"></div>
+        <div class="data-panel"><div class="panel-heading"><h2>Evidence passages</h2><span id="passage-total"></span></div><div id="passage-list" class="passage-list"><div class="empty-state"><p>Choose filters, then browse the corpus.</p></div></div><div class="pagination"><button class="secondary-button" id="passages-prev" type="button">Previous</button><span id="passage-page"></span><button class="secondary-button" id="passages-next" type="button">Next</button></div></div>
+        <div class="data-panel"><div class="panel-heading"><h2>Registered sources</h2><button class="secondary-button" id="load-sources" type="button">Load sources</button></div><div id="source-list" class="table-scroll"><p class="muted-copy">Load the source registry to review document metadata.</p></div></div>
+      </section>
+
+      <section class="page-view" id="page-traceability" data-page="traceability">
+        <div class="page-heading"><p class="eyebrow eyebrow-dark">Traceability &amp; verification</p><h1>Check a citation.</h1><p>Confirm that a passage ID resolves to the corpus and optionally compare a claimed excerpt with the source text.</p></div>
+        <form class="tool-card" id="verify-form">
+          <label>Evidence / passage ID<input id="verify-id" required placeholder="e.g. SRC007-P025-C001" /></label>
+          <label>Claimed excerpt <span class="muted-copy">(optional)</span><textarea id="verify-text" rows="4" placeholder="Paste the excerpt you want to compare with the stored passage"></textarea></label>
+          <button class="search-button" type="submit">Verify citation <span aria-hidden="true">→</span></button>
+        </form>
+        <div id="verify-result" class="tool-result" aria-live="polite"><div class="empty-state"><p>Verification result will appear here.</p></div></div>
+      </section>
+
+      <section class="page-view" id="page-feedback" data-page="feedback">
+        <div class="page-heading"><p class="eyebrow eyebrow-dark">Consented feedback</p><h1>Rate an evidence passage.</h1><p>Feedback is submitted only after you explicitly consent. Avoid entering patient-identifying or protected health information.</p></div>
+        <form class="tool-card feedback-form" id="feedback-form">
+          <label>Evidence / passage ID<input id="feedback-evidence-id" required placeholder="e.g. SRC007-P025-C001" /></label>
+          <label>Retrieval session ID <span class="muted-copy">(filled from a consented search when available)</span><input id="feedback-retrieval-id" placeholder="Optional retrieval ID" /></label>
+          <div class="form-row">
+            <label>Feedback type<select id="feedback-type"><option value="evidence_retrieval">Search relevance</option><option value="post_therapy">Post-therapy outcome</option></select></label>
+            <label>Was it helpful?<select id="feedback-helpful"><option value="true">Yes</option><option value="false">No</option></select></label>
+            <label>Reason<select id="feedback-reason"></select></label>
+          </div>
+          <label>Optional comment<textarea id="feedback-comment" rows="3" maxlength="1000" placeholder="Do not include names, phone numbers, dates of birth, or patient identifiers."></textarea></label>
+          <label class="consent-option"><input id="feedback-consent" type="checkbox" required /><span>I explicitly consent to this feedback being stored for retrieval evaluation.</span></label>
+          <button class="search-button" type="submit">Submit feedback <span aria-hidden="true">→</span></button>
+        </form>
+        <div id="feedback-result" class="tool-result" aria-live="polite"></div>
+        <div class="data-panel"><div class="panel-heading"><h2>Feedback overview</h2><button class="secondary-button" id="load-feedback-stats" type="button">Refresh feedback stats</button></div><div id="feedback-stats" class="stats-grid"></div><div id="feedback-table" class="table-scroll"><p class="muted-copy">No feedback statistics loaded yet.</p></div></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>VedAI · Evidence Retrieval, Traceability &amp; Feedback Pipeline</span>
+      <span>Local demo · <a href="/health" target="_blank" rel="noopener">Health status</a></span>
+    </footer>
+  </body>
+</html>

@@ -2,17 +2,20 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import hmac
 import os
+import re
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from uuid import uuid4
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.responses import JSONResponse
 
@@ -23,6 +26,7 @@ from panchakarma_evidence.retrieval import (
     RETRIEVAL_SYSTEM_VERSION,
     SYNTHETIC_DEMO_CORPUS_PATH,
     TOKENIZER_VERSION,
+    apply_safety_abstention,
     apply_feedback_reranking,
     build_extractive_answer,
     get_corpus_stats,
@@ -38,9 +42,14 @@ ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
 PORT = int(os.getenv("PORT", "4100"))
 MONGODB_URI = os.getenv("MONGODB_URI", "").strip()
+API_KEY = os.getenv("API_KEY", "").strip()
+FEEDBACK_RETENTION_DAYS = int(os.getenv("FEEDBACK_RETENTION_DAYS", "365"))
+if FEEDBACK_RETENTION_DAYS < 1:
+    raise RuntimeError("FEEDBACK_RETENTION_DAYS must be at least 1")
 ALLOWED_ORIGINS = [item.strip() for item in os.getenv("CORS_ORIGINS", "").split(",") if item.strip()]
 FEEDBACK_REASONS = {
     "useful",
+    "therapy_effective",
     "not_relevant",
     "outdated_source",
     "unclear_passage",
@@ -52,9 +61,19 @@ FEEDBACK_REASONS = {
 EDUCATIONAL_NOTICE = (
     "Educational source retrieval only. Not a diagnosis, treatment recommendation, or substitute for qualified clinical judgment."
 )
+ABSTENTION_NOTICE = (
+    "No passages were returned. This endpoint supports educational Panchakarma source lookup only; "
+    "it cannot provide personal diagnosis or treatment advice. Consult a qualified healthcare professional."
+)
 MAX_QUERY_LENGTH = 1000
+_COMMENT_REDACTIONS = (
+    (re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE), "[REDACTED_EMAIL]"),
+    (re.compile(r"(?<!\w)(?:\+?91[\s-]?)?[6-9]\d{9}(?!\w)"), "[REDACTED_PHONE]"),
+    (re.compile(r"(?<!\d)(?:\d[\s-]?){12}(?!\d)"), "[REDACTED_ID]"),
+    (re.compile(r"\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2})\b"), "[REDACTED_DATE]"),
+)
 
-# Global feedback storage instance (supports MongoDB with auto SQLite fallback)
+# Global feedback storage instance (MongoDB or SQLite selected during startup)
 storage: FeedbackStorage | None = None
 
 
@@ -87,10 +106,11 @@ class FeedbackRequest(BaseModel):
     model_config = {
         "json_schema_extra": {
             "example": {
-                "evidence_id": "SRC007-PK-VAM-001",
+                "evidence_id": "SRC007-P025-C001",
                 "helpful": False,
                 "reason_code": "therapy_ineffective",
                 "feedback_type": "post_therapy",
+                "consent_status": "consented",
                 "user_comment": "Patient felt no symptom relief post-therapy",
             }
         }
@@ -103,39 +123,39 @@ class FeedbackRequest(BaseModel):
     evidence_id: str | None = Field(
         default=None,
         description="The stable chunk ID of the evidence passage being rated",
-        examples=["SRC007-PK-VAM-001"],
+        examples=["SRC007-P025-C001"],
     )
     passage_id: str | None = Field(
         default=None,
         description="Alias for evidence_id",
-        examples=["SRC007-PK-VAM-001"],
+        examples=["SRC007-P025-C001"],
     )
     chunk_id: str | None = Field(
         default=None,
         description="Alias for evidence_id",
-        examples=["SRC007-PK-VAM-001"],
+        examples=["SRC007-P025-C001"],
     )
     rank: int = Field(default=1, ge=1, le=20, description="The 1-based rank at which this passage was shown to the user (default: 1)")
     helpful: bool | None = Field(default=None, description="True if the evidence was useful for the query, False otherwise")
     is_useful: bool | None = Field(default=None, description="Alias for helpful")
     reason_code: str | None = Field(
         default=None,
-        description="Fixed reason code: useful (if helpful=true), or not_relevant, outdated_source, unclear_passage, missing_context, therapy_ineffective, complication_observed, other. Auto-defaults if omitted.",
+        description="Reason code must match feedback_type. Post-therapy feedback requires an explicit outcome reason.",
         examples=["useful", "therapy_ineffective", "complication_observed"],
     )
     user_comment: str | None = Field(
         default=None,
         max_length=1000,
-        description="Optional post-therapy clinical note, symptom report, or feedback explanation",
-        examples=["Patient reported persistent nausea and no relief"],
+        description="Optional comment. Common email, phone, ID, and date patterns are redacted before storage; do not submit patient identifiers or protected health information.",
+        examples=["The retrieved passage was difficult to interpret"],
     )
-    feedback_type: str = Field(
-        default="post_therapy",
+    feedback_type: Literal["evidence_retrieval", "post_therapy"] = Field(
+        default="evidence_retrieval",
         description="Type of feedback: post_therapy (clinical outcome) or evidence_retrieval (search relevance)",
         examples=["post_therapy"],
     )
-    consent_status: str = Field(
-        default="consented",
+    consent_status: str | None = Field(
+        default=None,
         description="Must be explicitly 'consented' to store feedback",
         examples=["consented"],
     )
@@ -149,12 +169,12 @@ class CitationVerificationRequest(BaseModel):
     evidence_id: str | None = Field(
         default=None,
         description="The stable chunk ID to verify against the stored corpus",
-        examples=["SRC007-PK-VAM-001"],
+        examples=["SRC007-P025-C001"],
     )
     passage_id: str | None = Field(
         default=None,
         description="Alias for evidence_id",
-        examples=["SRC007-PK-VAM-001"],
+        examples=["SRC007-P025-C001"],
     )
     claimed_text: str | None = Field(
         default=None,
@@ -169,8 +189,15 @@ class CitationVerificationRequest(BaseModel):
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     global storage
-    storage = FeedbackStorage(mongodb_uri=MONGODB_URI)
-    print(f"Panchakarma Evidence API online. Storage backend: {storage.get_storage_type()}")
+    storage = FeedbackStorage(
+        mongodb_uri=MONGODB_URI,
+        feedback_retention_days=FEEDBACK_RETENTION_DAYS,
+    )
+    deleted = storage.purge_expired(FEEDBACK_RETENTION_DAYS)
+    print(
+        f"Panchakarma Evidence API online. Storage backend: {storage.get_storage_type()}; "
+        f"expired feedback records removed: {deleted['feedback_records']}"
+    )
     yield
     if storage is not None:
         storage.close()
@@ -187,6 +214,21 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+app.mount("/ui", StaticFiles(directory=ROOT / "frontend", html=True), name="presentation-ui")
+
+
+@app.middleware("http")
+async def optional_api_key_auth(request: Request, call_next):
+    """Protect API routes when API_KEY is configured; keep health/docs public."""
+    public_paths = {"/", "/health", "/docs", "/redoc", "/openapi.json"}
+    is_frontend_asset = request.url.path == "/ui" or request.url.path.startswith("/ui/")
+    if API_KEY and request.url.path not in public_paths and not is_frontend_asset:
+        authorization = request.headers.get("authorization", "")
+        bearer = authorization[7:].strip() if authorization.lower().startswith("bearer ") else ""
+        provided = request.headers.get("x-api-key", "") or bearer
+        if not hmac.compare_digest(provided, API_KEY):
+            return JSONResponse(status_code=401, content={"error": "valid API key required"})
+    return await call_next(request)
 
 if ALLOWED_ORIGINS:
     app.add_middleware(
@@ -255,6 +297,16 @@ def public_passage(passage: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def redact_comment(comment: str | None) -> str | None:
+    """Redact common direct identifiers. This is best-effort, not PHI detection."""
+    if comment is None:
+        return None
+    redacted = comment
+    for pattern, replacement in _COMMENT_REDACTIONS:
+        redacted = pattern.sub(replacement, redacted)
+    return redacted
+
+
 # ==============================================================================
 # Base & Health Endpoints
 # ==============================================================================
@@ -304,7 +356,8 @@ def search(request: SearchRequest) -> dict[str, Any]:
     effective_limit = request.top_k or request.limit or 5
     try:
         corpus = load_corpus()
-        passages = retrieve(query, corpus, effective_limit)
+        raw_passages = retrieve(query, corpus, effective_limit)
+        passages, abstention_reason = apply_safety_abstention(query, raw_passages)
     except (OSError, ValueError, KeyError) as exc:
         print(f"Evidence search failed: {exc}")
         raise HTTPException(
@@ -370,6 +423,11 @@ def search(request: SearchRequest) -> dict[str, Any]:
         "query": query,
         "passages": [public_passage(item) for item in passages],
         "insufficient_evidence": not bool(passages),
+        "abstention": {
+            "abstained": bool(abstention_reason),
+            "reason": abstention_reason,
+            "message": ABSTENTION_NOTICE if abstention_reason else None,
+        },
         "corpus_size": len(corpus),
         "tokenizer": TOKENIZER_VERSION,
         "retrieval_profile": RETRIEVAL_PROFILE["name"],
@@ -391,9 +449,15 @@ def answer(request: SearchRequest) -> dict[str, Any]:
     effective_limit = request.top_k or request.limit or 5
     try:
         corpus = load_corpus()
-        passages = retrieve(query, corpus, effective_limit)
+        raw_passages = retrieve(query, corpus, effective_limit)
+        passages, abstention_reason = apply_safety_abstention(query, raw_passages)
         return {
             **build_extractive_answer(query, passages, corpus),
+            "abstention": {
+                "abstained": bool(abstention_reason),
+                "reason": abstention_reason,
+                "message": ABSTENTION_NOTICE if abstention_reason else None,
+            },
             "corpus_size": len(corpus),
             "tokenizer": TOKENIZER_VERSION,
             "retrieval_profile": RETRIEVAL_PROFILE["name"],
@@ -424,19 +488,39 @@ def submit_feedback(request: FeedbackRequest) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail="helpful (or is_useful) boolean is required")
 
     consent_status = (request.consent_status or "").strip().lower()
-    if request.consent_use_feedback is False:
+    if request.consent_use_feedback is True and not consent_status:
+        consent_status = "consented"
+    elif request.consent_use_feedback is False:
         consent_status = "not_consented"
 
     if consent_status not in {"consented", "granted", "true"}:
         raise HTTPException(status_code=400, detail="explicit consent is required before storing feedback")
 
     reason_code = request.reason_code
+    retrieval_reasons = {"useful", "not_relevant", "outdated_source", "unclear_passage", "missing_context", "other"}
+    outcome_reasons = {"therapy_effective", "therapy_ineffective", "complication_observed", "other"}
+    if request.feedback_type == "post_therapy" and reason_code is None:
+        raise HTTPException(status_code=400, detail="reason_code is required for post_therapy feedback")
     if reason_code is None:
         reason_code = "useful" if helpful else "not_relevant"
     elif reason_code not in FEEDBACK_REASONS:
         raise HTTPException(status_code=400, detail="reason_code must be one of the supported fixed values")
-    elif (helpful and reason_code != "useful") or (not helpful and reason_code == "useful"):
-        raise HTTPException(status_code=400, detail="reason_code must match the helpful label")
+    if request.feedback_type == "evidence_retrieval":
+        if reason_code not in retrieval_reasons:
+            raise HTTPException(status_code=400, detail="reason_code is not valid for evidence_retrieval feedback")
+        if (helpful and reason_code != "useful") or (not helpful and reason_code == "useful"):
+            raise HTTPException(status_code=400, detail="reason_code must match the helpful label")
+    else:
+        if reason_code not in outcome_reasons:
+            raise HTTPException(status_code=400, detail="reason_code is not valid for post_therapy feedback")
+        if (helpful and reason_code not in {"therapy_effective", "other"}) or (
+            not helpful and reason_code in {"therapy_effective"}
+        ):
+            raise HTTPException(status_code=400, detail="reason_code must match the reported post_therapy outcome")
+
+    corpus = load_corpus()
+    if get_passage_by_id(evidence_id, corpus) is None:
+        raise HTTPException(status_code=404, detail="Evidence ID does not resolve to a corpus passage")
 
     st = get_storage()
     if not st.is_available():
@@ -446,6 +530,8 @@ def submit_feedback(request: FeedbackRequest) -> dict[str, Any]:
     retrieval = None
     if retrieval_id:
         retrieval = st.get_retrieval_session(retrieval_id)
+        if retrieval is None:
+            raise HTTPException(status_code=404, detail="Retrieval session was not found")
 
     if retrieval is not None:
         shown = next(
@@ -457,7 +543,7 @@ def submit_feedback(request: FeedbackRequest) -> dict[str, Any]:
             None,
         )
         if shown is None:
-            shown = {"evidenceId": evidence_id, "rank": request.rank}
+            raise HTTPException(status_code=400, detail="Evidence and rank were not shown in this retrieval session")
     else:
         # Create a session record so feedback is traceable even if dummy/no retrieval_id was provided
         session_id = retrieval_id or f"direct-{uuid4()}"
@@ -470,7 +556,8 @@ def submit_feedback(request: FeedbackRequest) -> dict[str, Any]:
             "systemVersion": RETRIEVAL_SYSTEM_VERSION,
             "shownAt": shown_at,
         }
-        st.save_retrieval_session(retrieval)
+        if not st.save_retrieval_session(retrieval):
+            raise HTTPException(status_code=503, detail="Feedback session could not be stored")
         shown = {"evidenceId": evidence_id, "rank": request.rank}
 
     feedback = {
@@ -483,8 +570,9 @@ def submit_feedback(request: FeedbackRequest) -> dict[str, Any]:
         "reasonCode": reason_code,
         "consentStatus": "consented",
         "systemVersion": retrieval["systemVersion"],
-        "userComment": request.user_comment,
-        "feedbackType": request.feedback_type or "post_therapy",
+        "userComment": redact_comment(request.user_comment),
+        "feedbackType": request.feedback_type,
+        "createdAt": datetime.now(timezone.utc),
     }
 
     success, feedback_id, error_reason = st.save_feedback(feedback)
@@ -504,8 +592,7 @@ def submit_feedback(request: FeedbackRequest) -> dict[str, Any]:
         "evidence_id": shown["evidenceId"],
         "helpful": helpful,
         "reason_code": reason_code,
-        "feedback_type": request.feedback_type or "post_therapy",
-        "user_comment": request.user_comment,
+        "feedback_type": request.feedback_type,
         "storage_backend": st.get_storage_type(),
     }
 
@@ -516,7 +603,7 @@ def get_feedback_statistics() -> dict[str, Any]:
     st = get_storage()
     if not st.is_available():
         return {"storage_status": "unavailable", "feedback_count": 0, "stats": []}
-    stats = st.get_feedback_stats(RETRIEVAL_SYSTEM_VERSION)
+    stats = st.get_feedback_overview(RETRIEVAL_SYSTEM_VERSION)
     total_events = sum(item.get("feedbackCount", item.get("count", 0)) for item in stats)
     return {
         "storage_status": "connected",
@@ -581,11 +668,15 @@ def get_sources() -> dict[str, Any]:
 
 
 @app.get("/api/evidence/stats", tags=["Corpus Inspection"])
-def get_statistics() -> dict[str, Any]:
-    """Summary overview of the evidence corpus, procedures covered, and feedback state."""
+def get_statistics(
+    procedure: str | None = Query(default=None, description="Optional procedure filter matching the passage browser"),
+    source_id: str | None = Query(default=None, description="Optional source ID filter matching the passage browser"),
+) -> dict[str, Any]:
+    """Summary overview of the full or filtered evidence corpus and feedback state."""
     st = get_storage()
     corpus = load_corpus()
-    stats = get_corpus_stats(corpus)
+    filtered_corpus = list_passages(procedure=procedure, source_id=source_id, corpus=corpus)
+    stats = get_corpus_stats(filtered_corpus)
     storage_type = st.get_storage_type()
     stats["storage_engine"] = storage_type
     stats["feedback_storage_available"] = st.is_available()
